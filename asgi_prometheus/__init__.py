@@ -12,7 +12,7 @@ from prometheus_client import (
 from prometheus_client.multiprocess import MultiProcessCollector
 
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 __license__ = "MIT"
 
 
