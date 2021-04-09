@@ -43,6 +43,9 @@ async def test_group_path():
     res = await client.get('/api/v1/messages')
     assert res.status_code == 200
 
+    res = await client.get('/unknown')
+    assert res.status_code == 200
+
     res = await client.get('/prometheus')
     assert res.status_code == 200
     text = await res.text()

@@ -1,7 +1,7 @@
 """Support cookie-encrypted sessions for ASGI applications."""
 
 import os
-from typing import Awaitable, Sequence
+from typing import Awaitable, Sequence, Set
 
 from asgi_tools.middleware import BaseMiddeware
 from asgi_tools.response import ResponseText
@@ -61,14 +61,9 @@ class PrometheusMiddleware(BaseMiddeware):
         """Record metrics."""
         path, method = scope['path'], scope['method']
         if path == self.metrics_url:
-            registry = REGISTRY
-            if 'PROMETHEUS_MULTIPROC_DIR' in os.environ:
-                registry = CollectorRegistry()
-                MultiProcessCollector(registry)
+            return await ResponseText(get_metrics())(scope, receive, send)
 
-            return await ResponseText(generate_latest(registry))(scope, receive, send)
-
-        path = self.__process_path(path)
+        path = process_path(path, self.group_paths)
 
         REQUESTS.labels(method=method, path=path).inc()
         REQUESTS_IN_PROGRESS.labels(method=method, path=path).inc()
@@ -89,10 +84,22 @@ class PrometheusMiddleware(BaseMiddeware):
         finally:
             REQUESTS_IN_PROGRESS.labels(method=method, path=path).dec()
 
-    def __process_path(self, path: str) -> str:
-        while path:
-            if path in self.group_paths:
-                return f"{path}*"
-            path, *_ = path.rsplit('/', 1)
 
-        return path
+def process_path(path: str, prefixes: Set) -> str:
+    """Search the path by prefix in prefixes."""
+    while path:
+        if path in prefixes:
+            return f"{path}*"
+        path, *_ = path.rsplit('/', 1)
+
+    return path
+
+
+def get_metrics() -> str:
+    """Get collected metrics."""
+    registry = REGISTRY
+    if 'PROMETHEUS_MULTIPROC_DIR' in os.environ:
+        registry = CollectorRegistry()
+        MultiProcessCollector(registry)
+
+    return generate_latest(registry)
