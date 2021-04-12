@@ -1,6 +1,7 @@
 """Support cookie-encrypted sessions for ASGI applications."""
 
 import os
+import time
 from typing import Awaitable, Sequence, Set
 
 from asgi_tools.middleware import BaseMiddeware
@@ -75,7 +76,11 @@ class PrometheusMiddleware(BaseMiddeware):
             return send(msg)
 
         try:
-            return await self.app(scope, receive, custom_send)
+            before_time = time.perf_counter()
+            res = await self.app(scope, receive, custom_send)
+            after_time = time.perf_counter()
+            REQUESTS_TIME.labels(method=method, path=path).observe(after_time - before_time)
+            return res
 
         except Exception as exc:
             EXCEPTIONS.labels(method=method, path=path, exception=type(exc).__name__).inc()

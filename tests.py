@@ -21,6 +21,7 @@ async def test_base():
     text = await res.text()
     assert text
     assert 'requests_count_total' in text
+    assert 'requests_time' in text
 
 
 async def test_group_path():
