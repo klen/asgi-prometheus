@@ -75,7 +75,7 @@ As `ASGI-Tools`_ Internal middleware
         return 'Hello World!'
 
     # http GET / -> OK
-    # http GET /metrics -> [Prometheus metrics]
+    # http GET /prometheus -> [Prometheus metrics (default URL)]
 
 
 Options
@@ -90,7 +90,7 @@ Options
         # Your ASGI application
         app,
 
-        # Metrics URL for Prometheus
+        # Metrics URL for Prometheus (set empty string to disable)
         metrics_url='/prometheus',
 
         # List of path's prefixes to group. A path which starts from the prefix will be grouped.
