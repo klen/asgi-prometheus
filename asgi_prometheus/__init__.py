@@ -6,7 +6,7 @@ from typing import Awaitable, Sequence, Set
 
 from asgi_tools.middleware import BaseMiddeware
 from asgi_tools.response import ResponseText
-from asgi_tools._types import ASGIApp, Scope, Receive, Send, Message
+from asgi_tools.typing import ASGIApp, Scope, Receive, Send, Message
 from prometheus_client import (
     REGISTRY, CollectorRegistry, Counter, Gauge, Histogram, generate_latest
 )
