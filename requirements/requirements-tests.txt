@@ -1,0 +1,4 @@
+pytest
+pytest-aio[trio,curio]
+pytest-mypy
+
