@@ -11,7 +11,7 @@ from prometheus_client import (REGISTRY, CollectorRegistry, Counter, Gauge, Hist
                                generate_latest)
 from prometheus_client.multiprocess import MultiProcessCollector
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __license__ = "MIT"
 
 
