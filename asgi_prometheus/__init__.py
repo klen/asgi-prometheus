@@ -2,11 +2,11 @@
 
 import os
 import time
-from typing import Awaitable, Sequence, Set
+from typing import Awaitable, Optional, Sequence, Set
 
 from asgi_tools.middleware import BaseMiddeware
 from asgi_tools.response import ResponseText
-from asgi_tools.typing import ASGIApp, Message, Receive, Scope, Send
+from asgi_tools.types import TASGIApp, TASGIMessage, TASGIReceive, TASGIScope, TASGISend
 from prometheus_client import (REGISTRY, CollectorRegistry, Counter, Gauge, Histogram,
                                generate_latest)
 from prometheus_client.multiprocess import MultiProcessCollector
@@ -49,8 +49,8 @@ class PrometheusMiddleware(BaseMiddeware):
 
     def __init__(
         self,
-        app: ASGIApp,
-        group_paths: Sequence = None,
+        app: TASGIApp,
+        group_paths: Optional[Sequence] = None,
         metrics_url: str = "/prometheus",
     ):
         """Init the middleware."""
@@ -58,7 +58,9 @@ class PrometheusMiddleware(BaseMiddeware):
         self.metrics_url = metrics_url
         self.group_paths = set(group_paths or [])
 
-    async def __process__(self, scope: Scope, receive: Receive, send: Send):
+    async def __process__(
+        self, scope: TASGIScope, receive: TASGIReceive, send: TASGISend
+    ):
         """Record metrics."""
         path, method = scope["path"], scope["method"]
         if path == self.metrics_url:
@@ -69,7 +71,7 @@ class PrometheusMiddleware(BaseMiddeware):
         REQUESTS.labels(method=method, path=path).inc()
         REQUESTS_IN_PROGRESS.labels(method=method, path=path).inc()
 
-        def custom_send(msg: Message) -> Awaitable:
+        def custom_send(msg: TASGIMessage) -> Awaitable:
             if msg["type"] == "http.response.start":
                 RESPONSES.labels(method=method, path=path, status=msg["status"]).inc()
 
@@ -104,7 +106,7 @@ def process_path(path: str, prefixes: Set) -> str:
     return path
 
 
-def get_metrics() -> str:
+def get_metrics() -> bytes:
     """Get collected metrics."""
     registry = REGISTRY
     if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
