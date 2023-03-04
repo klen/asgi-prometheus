@@ -1,22 +1,27 @@
 """Support cookie-encrypted sessions for ASGI applications."""
+from __future__ import annotations
 
 import os
 import time
-from typing import Awaitable, Optional, Sequence, Set
+from typing import TYPE_CHECKING, Awaitable, Optional, Sequence, Set
 
 from asgi_tools.middleware import BaseMiddeware
 from asgi_tools.response import ResponseText
-from asgi_tools.types import TASGIApp, TASGIMessage, TASGIReceive, TASGIScope, TASGISend
-from prometheus_client import (REGISTRY, CollectorRegistry, Counter, Gauge, Histogram,
-                               generate_latest)
+from prometheus_client import (
+    REGISTRY,
+    CollectorRegistry,
+    Counter,
+    Gauge,
+    Histogram,
+    generate_latest,
+)
 from prometheus_client.multiprocess import MultiProcessCollector
 
-__version__ = "1.1.1"
-__license__ = "MIT"
-
+if TYPE_CHECKING:
+    from asgi_tools.types import TASGIApp, TASGIMessage, TASGIReceive, TASGIScope, TASGISend
 
 REQUESTS = Counter(
-    "requests_count", "Count of requests by method and path.", ["method", "path"]
+    "requests_count", "Count of requests by method and path.", ["method", "path"],
 )
 
 REQUESTS_TIME = Histogram(
@@ -59,7 +64,7 @@ class PrometheusMiddleware(BaseMiddeware):
         self.group_paths = set(group_paths or [])
 
     async def __process__(
-        self, scope: TASGIScope, receive: TASGIReceive, send: TASGISend
+        self, scope: TASGIScope, receive: TASGIReceive, send: TASGISend,
     ):
         """Record metrics."""
         path, method = scope["path"], scope["method"]
@@ -82,15 +87,17 @@ class PrometheusMiddleware(BaseMiddeware):
             res = await self.app(scope, receive, custom_send)
             after_time = time.perf_counter()
             REQUESTS_TIME.labels(method=method, path=path).observe(
-                after_time - before_time
+                after_time - before_time,
             )
-            return res
 
         except Exception as exc:
             EXCEPTIONS.labels(
-                method=method, path=path, exception=type(exc).__name__
+                method=method, path=path, exception=type(exc).__name__,
             ).inc()
             raise exc from None
+
+        else:
+            return res
 
         finally:
             REQUESTS_IN_PROGRESS.labels(method=method, path=path).dec()
