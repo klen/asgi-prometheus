@@ -35,7 +35,7 @@ jobs:
 
     - name: Check code
       run: |
-        ruff asgi_prometheus
+        ruff check asgi_prometheus
 
     - name: Test with pytest
       run: |
