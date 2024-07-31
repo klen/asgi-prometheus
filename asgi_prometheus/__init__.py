@@ -1,9 +1,10 @@
 """Support cookie-encrypted sessions for ASGI applications."""
+
 from __future__ import annotations
 
 import os
 import time
-from typing import TYPE_CHECKING, Awaitable, Optional, Sequence, Set
+from typing import TYPE_CHECKING, Awaitable, Optional, Sequence
 
 from asgi_tools.middleware import BaseMiddeware
 from asgi_tools.response import ResponseText
@@ -18,10 +19,18 @@ from prometheus_client import (
 from prometheus_client.multiprocess import MultiProcessCollector
 
 if TYPE_CHECKING:
-    from asgi_tools.types import TASGIApp, TASGIMessage, TASGIReceive, TASGIScope, TASGISend
+    from asgi_tools.types import (
+        TASGIApp,
+        TASGIMessage,
+        TASGIReceive,
+        TASGIScope,
+        TASGISend,
+    )
 
 REQUESTS = Counter(
-    "requests_count", "Count of requests by method and path.", ["method", "path"],
+    "requests_count",
+    "Count of requests by method and path.",
+    ["method", "path"],
 )
 
 REQUESTS_TIME = Histogram(
@@ -64,7 +73,10 @@ class PrometheusMiddleware(BaseMiddeware):
         self.group_paths = set(group_paths or [])
 
     async def __process__(
-        self, scope: TASGIScope, receive: TASGIReceive, send: TASGISend,
+        self,
+        scope: TASGIScope,
+        receive: TASGIReceive,
+        send: TASGISend,
     ):
         """Record metrics."""
         path, method = scope["path"], scope["method"]
@@ -90,9 +102,11 @@ class PrometheusMiddleware(BaseMiddeware):
                 after_time - before_time,
             )
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             EXCEPTIONS.labels(
-                method=method, path=path, exception=type(exc).__name__,
+                method=method,
+                path=path,
+                exception=type(exc).__name__,
             ).inc()
             raise exc from None
 
@@ -103,7 +117,7 @@ class PrometheusMiddleware(BaseMiddeware):
             REQUESTS_IN_PROGRESS.labels(method=method, path=path).dec()
 
 
-def process_path(path: str, prefixes: Set) -> str:
+def process_path(path: str, prefixes: set) -> str:
     """Search the path by prefix in prefixes."""
     while path:
         if path in prefixes:

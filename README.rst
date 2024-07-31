@@ -28,7 +28,7 @@ ASGI-Prometheus
 Requirements
 =============
 
-- python >= 3.7
+- python >= 3.9
 
 .. _installation:
 
@@ -131,4 +131,3 @@ Licensed under a `MIT license`_.
 .. _Trio: https://trio.readthedocs.io/en/stable/
 .. _Curio: https://curio.readthedocs.io/en/latest/
 .. _ASGI-Tools: https://github.com/klen/asgi-tools
-
