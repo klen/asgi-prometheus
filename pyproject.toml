@@ -1,6 +1,6 @@
 [project]
 name = "asgi-prometheus"
-version = "1.2.0"
+version = "1.2.1"
 description = "Support Prometheus metrics for ASGI applications"
 readme = "README.rst"
 requires-python = ">=3.9"
